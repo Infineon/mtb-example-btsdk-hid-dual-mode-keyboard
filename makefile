@@ -1,10 +1,10 @@
 #
-# Copyright 2016-2020, Cypress Semiconductor Corporation or a subsidiary of
-# Cypress Semiconductor Corporation. All Rights Reserved.
+# Copyright 2016-2021, Cypress Semiconductor Corporation (an Infineon company) or
+# an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
 #
 # This software, including source code, documentation and related
-# materials ("Software"), is owned by Cypress Semiconductor Corporation
-# or one of its subsidiaries ("Cypress") and is protected by and subject to
+# materials ("Software") is owned by Cypress Semiconductor Corporation
+# or one of its affiliates ("Cypress") and is protected by and subject to
 # worldwide patent protection (United States and foreign),
 # United States copyright laws and international treaty provisions.
 # Therefore, you may use this Software only as provided in the license
@@ -13,7 +13,7 @@
 # If no EULA applies, Cypress hereby grants you a personal, non-exclusive,
 # non-transferable license to copy, modify, and compile the Software
 # source code solely for use in connection with Cypress's
-# integrated circuit products. Any reproduction, modification, translation,
+# integrated circuit products.  Any reproduction, modification, translation,
 # compilation, or representation of this Software except as specified
 # above is prohibited without the express written permission of Cypress.
 #
@@ -130,19 +130,20 @@ AUTO_RECONNECT_DEFAULT=0
 
 ##########
 # LE link control flags. Those flags takes effect only if LE capability is turned on
-#
+
 # Use ASSYMETRIC_SLAVE_LATENCY=1 if master won't accept slave connection parameter update request
- ASSYMETRIC_SLAVE_LATENCY_DEFAULT=0
-#
+ASSYMETRIC_SLAVE_LATENCY_DEFAULT=0
+
 # Use LE_LOCAL_PRIVACY=1 to advertise with Resolvable Private Address (RPA)
- LE_LOCAL_PRIVACY_DEFAULT=0
-#
+LE_LOCAL_PRIVACY_DEFAULT=0
+
 # Use SKIP_PARAM_UPDATE=1 to not request connection parameter update immediately when
 # received LE conn param update complete event with non-preferred values
- SKIP_PARAM_UPDATE_DEFAULT=1
-#
+SKIP_PARAM_UPDATE_DEFAULT=1
+
 # DISCONNECTED_ENDLESS_ADV=1 to do endless advertisement without expiration period.
- DISCONNECTED_ENDLESS_ADV_DEFAULT=0
+DISCONNECTED_ENDLESS_ADV_DEFAULT=0
+
 ##########
 
 
@@ -183,6 +184,11 @@ CY_APP_DEFINES = \
   -DSUPPORT_KEY_REPORT \
   -DSLEEP_ALLOWED=$(SLEEP_ALLOWED) \
   -DLED_SUPPORT=$(LED)
+
+ifeq ($(FASTPAIR_ENABLE),1)
+ CY_APP_DEFINES += -DFASTPAIR_ENABLE -DFASTPAIR_ACCOUNT_KEY_NUM=5
+ COMPONENTS += gfps_provider
+endif
 
 # SUPPORT_CODE_ENTRY requires SUPPORT_KEYSCAN to be enabled
 #CY_APP_DEFINES += -DSUPPORT_CODE_ENTRY

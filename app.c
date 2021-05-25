@@ -271,7 +271,7 @@ STATIC wiced_bool_t APP_connect_button(uint8_t keyCode, wiced_bool_t down)
         {
             WICED_BT_TRACE("\nConnect Btn Pressed");
             hidd_link_virtual_cable_unplug();
-            hidd_enter_pairing();
+            hidd_pairing();
         }
         return TRUE;
     }

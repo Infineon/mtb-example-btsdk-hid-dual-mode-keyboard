@@ -41,7 +41,6 @@
 #define __APP_BATTERY_H__
 
 #ifdef BATTERY_REPORT_SUPPORT
-#include "wiced.h"
 #include "wiced_hal_batmon.h"
 
 #define BATTERY_RPT_SIZE 1
@@ -57,7 +56,21 @@ typedef PACKED struct
 
 extern BatteryReport batRpt;
 
-/********************************************************************************
+/*******************************************************************************
+ * Function Name: void bat_poll
+ ********************************************************************************
+ * Summary: poll for battery level
+ *
+ * Parameters:
+ *  none
+ *
+ * Return:
+ *  none
+ *
+ *******************************************************************************/
+#define bat_poll() wiced_hal_batmon_poll_monitor();
+
+/*******************************************************************************
  * Function Name: void bat_init
  ********************************************************************************
  * Summary: initialize battery report
@@ -73,5 +86,6 @@ void bat_init(void (shutdown_cb)());
 
 #else
 # define bat_init(c)
+# define bat_poll()
 #endif
 #endif // __APP_BATTERY_H__

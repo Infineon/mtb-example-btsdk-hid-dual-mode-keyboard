@@ -171,11 +171,11 @@ typedef union {
 /********************************************************************************
  * Include all components
  *******************************************************************************/
-#include "battery/battery.h"
-#include "ota/ota.h"
-#include "bt/bt.h"
-#include "key/key.h"
-#include "key/key_entry.h"
+#include "battery.h"
+#include "ota.h"
+#include "bt.h"
+#include "key.h"
+#include "key_entry.h"
 
 typedef struct {
     wiced_hidd_app_event_queue_t eventQueue;

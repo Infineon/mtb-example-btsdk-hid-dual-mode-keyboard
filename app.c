@@ -298,6 +298,8 @@ STATIC void APP_keyDetected(HidEventKey* kbKeyEvent)
     uint8_t keyDown = kbKeyEvent->keyEvent.upDownFlag == KEY_DOWN;
     uint8_t keyCode = kbKeyEvent->keyEvent.keyCode;
 
+    hidd_activity_detected();
+
     // Check for buttons
     if (!APP_connect_button(keyCode, keyDown))
     {
@@ -322,6 +324,10 @@ STATIC void APP_keyDetected(HidEventKey* kbKeyEvent)
 
             // Disable end-of-scan cycle suppression
             suppressEndScanCycleAfterConnectButton = FALSE;
+        }
+        else
+        {
+            WICED_BT_TRACE("\nRollover");
         }
     }
 }
@@ -784,6 +790,7 @@ STATIC void APP_pollReportUserActivity(void)
         // Check if we have any user activity. If it is paired and not connected, we reconnect.
         if (activitiesDetectedInLastPoll != HIDLINK_ACTIVITY_NONE && hidd_is_paired())
         {
+            WICED_BT_TRACE("\nreconnect");
             // ask the transport to connect.
             hidd_link_connect();
         }
@@ -1020,7 +1027,10 @@ void app_transportStateChangeNotification(uint8_t transport, uint8_t newState)
 
         // Tell the transport to stop polling
         hidd_link_enable_poll_callback(transport,WICED_FALSE);
-        hidd_deep_sleep_not_allowed(2000); //2 seconds. timeout in ms
+
+        //allow Shut Down Sleep (SDS) only if we are not attempting reconnect
+        if (!hidd_link_is_reconnect_timer_running())
+            hidd_deep_sleep_not_allowed(2000); // 2 seconds. timeout in ms
         break;
 
     case HIDLINK_DISCOVERABLE:
@@ -1108,11 +1118,9 @@ wiced_result_t app_start(void)
 
     /* component/peripheral init */
     bat_init(APP_shutdown);
-    hidd_link_init();
     key_init(NUM_KEYSCAN_ROWS, NUM_KEYSCAN_COLS, APP_pollReportUserActivity, APP_keyDetected);
 
-    wiced_hal_mia_enable_mia_interrupt(TRUE);
-    wiced_hal_mia_enable_lhl_interrupt(TRUE);//GPIO interrupt
+    hidd_link_init(); // linitialize link last
 
     // poll for any activities
     APP_pollReportUserActivity();

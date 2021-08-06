@@ -96,8 +96,11 @@ endif
 LE_DEFAULT=1
 
 # To enable BR/EDR capability
-BREDR_DEFAULT=0
-
+ifeq ($(TARGET),CYW920819REF-KB-01)
+ BREDR_DEFAULT=1
+else
+ BREDR_DEFAULT=0
+endif
 ##########
 # To enable HCI_UART for ClientControl
 TESTING_USING_HCI_DEFAULT=1
@@ -141,8 +144,8 @@ LE_LOCAL_PRIVACY_DEFAULT=0
 # received LE conn param update complete event with non-preferred values
 SKIP_PARAM_UPDATE_DEFAULT=1
 
-# DISCONNECTED_ENDLESS_ADV=1 to do endless advertisement without expiration period.
-DISCONNECTED_ENDLESS_ADV_DEFAULT=0
+# ENDLESS_ADV=1 to do endless advertisement without expiration period.
+ENDLESS_ADV_DEFAULT=0
 
 ##########
 
@@ -158,17 +161,17 @@ LE_LOCAL_PRIVACY?=$(LE_LOCAL_PRIVACY_DEFAULT)
 SKIP_PARAM_UPDATE?=$(SKIP_PARAM_UPDATE_DEFAULT)
 AUTO_RECONNECT?=$(AUTO_RECONNECT_DEFAULT)
 SLEEP_ALLOWED?=$(SLEEP_ALLOWED_DEFAULT)
-DISCONNECTED_ENDLESS_ADV?=$(DISCONNECTED_ENDLESS_ADV_DEFAULT)
+ENDLESS_ADV?=$(ENDLESS_ADV_DEFAULT)
 LED?=$(LED_SUPPORT_DEFAULT)
 LE?=$(LE_DEFAULT)
 BREDR?=$(BREDR_DEFAULT)
 
 ifeq ($(TARGET), CYW920735Q60EVB-01)
  ifeq ($(BREDR), 1)
-#  $(error TARGET $(TARGET) does not support BR/EDR)
-  $(warning *********************************************************************)
-  $(warning TARGET $(TARGET) does not support BR/EDR BREDR=0 is enforced)
-  $(warning *********************************************************************)
+  $(error TARGET $(TARGET) does not support BR/EDR)
+#  $(warning *********************************************************************)
+#  $(warning TARGET $(TARGET) does not support BR/EDR BREDR=0 is enforced)
+#  $(warning *********************************************************************)
   BREDR=0
   LE=1
  endif
@@ -232,8 +235,8 @@ ifeq ($(LE),1)
   CY_APP_DEFINES += -DSKIP_CONNECT_PARAM_UPDATE_EVEN_IF_NO_PREFERED
  endif
 
- ifeq ($(DISCONNECTED_ENDLESS_ADV),1)
-  CY_APP_DEFINES += -DENDLESS_LE_ADVERTISING_WHILE_DISCONNECTED
+ ifeq ($(ENDLESS_ADV),1)
+  CY_APP_DEFINES += -DENDLESS_LE_ADVERTISING
  endif
 
  ifeq ($(LE_LOCAL_PRIVACY),1)

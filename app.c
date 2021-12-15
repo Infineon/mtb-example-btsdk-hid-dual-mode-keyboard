@@ -1004,17 +1004,17 @@ void app_transportStateChangeNotification(uint8_t transport, uint8_t newState)
 
         if(app.transportStateChangeNotification)
         {
-            //We connected after power on reset or HID off recovery.
-            //Start 20 second timer to allow time to setup connection encryption
-            //before allowing HID Off/Micro-BCS.
-            hidd_deep_sleep_not_allowed(20000); //20 seconds. timeout in ms
-        }
-        else
-        {
             //Wake up from HID Off and already have a connection then allow HID Off in 1 second
             //This will allow time to send a key press.
             //To do need to check if key event is in the queue at lpm query
             hidd_deep_sleep_not_allowed(1000); // 1 second. timeout in ms
+        }
+        else
+        {
+            //We connected after power on reset or HID off recovery.
+            //Start 20 second timer to allow time to setup connection encryption
+            //before allowing HID Off/Micro-BCS.
+            hidd_deep_sleep_not_allowed(20000); //20 seconds. timeout in ms
         }
         break;
 

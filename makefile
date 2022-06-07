@@ -1,5 +1,5 @@
 #
-# Copyright 2016-2021, Cypress Semiconductor Corporation (an Infineon company) or
+# Copyright 2016-2022, Cypress Semiconductor Corporation (an Infineon company) or
 # an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
 #
 # This software, including source code, documentation and related
@@ -70,9 +70,8 @@ FEATURES=
 #
 # Define basic library COMPONENTS
 #
-COMPONENTS +=bsp_design_modus
+COMPONENTS += bsp_design_modus
 COMPONENTS += hidd_lib2
-CY_APP_PATCH_LIBS += wiced_hidd_lib.a
 
 ifeq ($(TARGET),CYW920735Q60EVB-01)
  # use app specific design.modus
@@ -148,6 +147,9 @@ SKIP_PARAM_UPDATE_DEFAULT=1
 ENDLESS_ADV_DEFAULT=0
 
 ##########
+ifeq ($(PTS), 1)
+ CY_APP_DEFINES += -DPTS
+endif
 
 
 XIP?=xip
@@ -167,6 +169,9 @@ LE?=$(LE_DEFAULT)
 BREDR?=$(BREDR_DEFAULT)
 
 ifeq ($(TARGET), CYW920735Q60EVB-01)
+ ifeq ($(PTS), 1)
+  $(error PTS is not supported for TARGET $(TARGET))
+ endif
  ifeq ($(BREDR), 1)
   $(error TARGET $(TARGET) does not support BR/EDR)
 #  $(warning *********************************************************************)
@@ -180,13 +185,17 @@ endif
 #
 # App defines
 #
-CY_APP_DEFINES = \
+CY_APP_DEFINES += \
   -DWICED_BT_TRACE_ENABLE \
   -DSUPPORT_KEYSCAN \
   -DBATTERY_REPORT_SUPPORT \
   -DSUPPORT_KEY_REPORT \
   -DSLEEP_ALLOWED=$(SLEEP_ALLOWED) \
   -DLED_SUPPORT=$(LED)
+
+ifneq ($(TARGET), CYW955572BTEVK-01)
+ CY_APP_PATCH_LIBS += wiced_hidd_lib.a
+endif
 
 ifeq ($(FASTPAIR_ENABLE),1)
  CY_APP_DEFINES += -DFASTPAIR_ENABLE -DFASTPAIR_ACCOUNT_KEY_NUM=5

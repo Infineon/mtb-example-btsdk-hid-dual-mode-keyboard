@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2021, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2016-2022, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -51,7 +51,7 @@
 
 /// Maximum number of bytes in the bit-mapped key report structure.
 /// A BLE ATT can hold 23 bytes.
-#define KEY_NUM_BYTES_IN_BIT_MAPPED_REPORT   11
+#define KEY_NUM_BYTES_IN_MAPPED_REPORT    2
 #define KEY_NUM_BYTES_IN_USER_DEFINED_REPORT   8
 
 /// Func lock key state
@@ -121,7 +121,7 @@ typedef PACKED struct
     uint8_t    reportID;
 
     /// Bit mapped keys
-    uint8_t    bitMappedKeys[KEY_NUM_BYTES_IN_BIT_MAPPED_REPORT];
+    uint8_t    bitMappedKeys[KEY_NUM_BYTES_IN_MAPPED_REPORT];
 }KeyboardBitMappedReport;
 
 /// Pin entry report structure
@@ -153,6 +153,16 @@ typedef PACKED struct
     /// Set to the value specified in the config record.
     uint8_t    status;
 }KeyboardFuncLockReport;
+
+/// Func lock report struct. Sent when the func lock key is pressed
+typedef PACKED struct
+{
+    /// Set to the value specified in the config record.
+    uint8_t    reportID;
+
+    /// Set to the value specified in the config record.
+    uint8_t    data;
+}KeyboardScrollReport;
 
 /// Keyboard output report. Sets the LED state
 typedef PACKED struct
@@ -199,7 +209,7 @@ typedef struct {
     KeyboardSleepReport     sleepReport;
 
     /// scroll report
-    KeyboardMotionReport    scrollReport;
+    KeyboardScrollReport    scrollReport;
 
 #ifdef SUPPORT_CODE_ENTRY
     /// pin report
@@ -330,7 +340,7 @@ void key_sendRollover();
  *  TRUE -- if handled
  *
  *******************************************************************************/
-wiced_bool_t key_setReport(wiced_hidd_report_type_t reportType,
+uint8_t key_setReport(wiced_hidd_report_type_t reportType,
                      uint8_t reportId,
                      void *payload,
                      uint16_t payloadSize);

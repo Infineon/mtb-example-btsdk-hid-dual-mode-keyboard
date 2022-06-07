@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2021, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2016-2022, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -41,6 +41,7 @@
 
 #include "app.h"
 #include "usb_usage.h"
+#include "wiced_bt_hidd.h"
 
 #define CODE_ROLLOVER 1
 
@@ -686,7 +687,7 @@ void key_clear(wiced_bool_t sendRpt)
     // clear report data
     memset(&key_rpts.stdRpt.modifierKeys, 0, sizeof(KeyboardStandardReport)-1);
     memset(&key_rpts.bitMappedReport.bitMappedKeys, 0, sizeof(KeyboardBitMappedReport)-1);
-    memset(&key_rpts.scrollReport.motionAxis0, 0, sizeof(KeyboardMotionReport)-1);
+    memset(&key_rpts.scrollReport.data, 0, sizeof(KeyboardScrollReport)-1);
 #ifdef SUPPORT_CODE_ENTRY
     memset(&key_rpts.pinReport.reportCode, 0, sizeof(KeyboardPinEntryReport)-1);
 #endif
@@ -731,13 +732,64 @@ void key_sendRollover()
  *  TRUE -- if handled
  *
  *******************************************************************************/
-wiced_bool_t key_setReport(wiced_hidd_report_type_t reportType,
+uint8_t key_setReport(wiced_hidd_report_type_t reportType,
                      uint8_t reportId,
                      void *payload,
                      uint16_t payloadSize)
 {
-    if (reportType == WICED_HID_REPORT_TYPE_OUTPUT)
+    uint8_t size;
+    uint8_t * reportPtr;
+
+    switch (reportType)
     {
+    case HID_PAR_REP_TYPE_INPUT:
+        switch (reportId)
+        {
+        case RPT_ID_IN_STD_KEY:
+            size = sizeof(KeyboardStandardReport);
+            reportPtr = (uint8_t *) &key_rpts.stdRpt;
+            break;
+
+        case RPT_ID_IN_BIT_MAPPED:
+            size = sizeof(KeyboardBitMappedReport);
+            reportPtr = (uint8_t *) &key_rpts.bitMappedReport;
+            break;
+
+        case RPT_ID_IN_SCROLL:
+            size = sizeof(KeyboardScrollReport);
+            reportPtr = (uint8_t *) &key_rpts.scrollReport;
+            break;
+#if 0
+        case RPT_ID_IN_BATTERY:
+            size = sizeof(BatteryReport);
+            reportPtr = (uint8_t *) &batRpt;
+            break;
+#endif
+        case RPT_ID_IN_SLEEP:
+            size = sizeof(KeyboardSleepReport);
+            reportPtr = (uint8_t *) &key_rpts.sleepReport;
+            break;
+
+        case RPT_ID_IN_FUNC_LOCK:
+            size = sizeof(KeyboardFuncLockReport);
+            reportPtr = (uint8_t *) &key_rpts.funcLockReport;
+            break;
+
+        default:
+            return HID_PAR_HANDSHAKE_RSP_ERR_INVALID_REP_ID;
+        }
+
+        reportPtr++; // skip report id
+        size--;
+
+        if (payloadSize != size)
+        {
+            return HID_PAR_HANDSHAKE_RSP_ERR_INVALID_PARAM;
+        }
+        memcpy(reportPtr, payload, size);
+        return HID_PAR_HANDSHAKE_RSP_SUCCESS;
+
+    case WICED_HID_REPORT_TYPE_OUTPUT:
         // Pass to handler based on report ID. Ensure that report ID is in the payload
         if (payloadSize >= 1)
         {
@@ -749,10 +801,12 @@ wiced_bool_t key_setReport(wiced_hidd_report_type_t reportType,
 #if LED_SUPPORT
                 key_rpts.ledReport.ledStates & 0x2 ? hidd_led_on(LED_CAPS) : hidd_led_off(LED_CAPS);
 #endif
-                return TRUE;
+                return HID_PAR_HANDSHAKE_RSP_SUCCESS;
             }
+            return HID_PAR_HANDSHAKE_RSP_ERR_INVALID_REP_ID;
         }
+        break;
     }
-    return FALSE;
+    return HID_PAR_HANDSHAKE_RSP_ERR_INVALID_PARAM;
 }
 #endif // SUPPORT_KEY_REPORT

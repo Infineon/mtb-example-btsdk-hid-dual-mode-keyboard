@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2021, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2016-2022, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -38,58 +38,57 @@
 *
 * Keyboard
 *
-* The exmaple can be compile to BT keyboard, LE keyboard, or Dual Mode (BT classic and LE) Keyboard
+* The exmaple can be compile to Bluetooth keyboard, LE keyboard, or Dual Mode (Bluetooth classic and LE) Keyboard
 * application to run on a single chip SoC.  It provides a turnkey solution
 * using on-chip keyscan HW component and is compliant with HID over GATT Profile (HOGP) and HID Profile.
 *
-* During initialization the app registers with LE and BT stack, WICED HID Device Library and
+* During initialization the app registers with LE and Bluetooth stack, AIROC HID Device Library and
 * keyscan HW to receive various notifications including bonding/pairing complete, (HIDD) connection
 * status change, peer GATT request/commands, HIDD events and interrupts for key pressed/released.
 * If not paired before, pressing any key will start LE advertising and enter discoverable, i.e. inquiry scan and page scan enabled.
 * When device is successfully bonded, the app saves bonded host's information in the NVRAM and stops LE advertising and stops
 * inquiry scan and page scan.
-* If the bonded peer device is using BT classic, the dual mode keyboard now acts as a BT classic keyboard.
+* If the bonded peer device is using Bluetooth classic, the dual mode keyboard now acts as a Bluetooth classic keyboard.
 * If the bonded peer device is using LE, the dual mode keyboard now acts as a LE keyboard.
 * When user presses/releases key, a key report will be sent to the host.
 * On connection up or battery level changed, a battery report will be sent to the host.
 * When battery level is below shutdown voltage, device will critical shutdown.
 * Host can send LED report to the device to control LED.
 *
+* 20735/20835 only supports LE.
+*
 * Features demonstrated
 *  - GATT database, SDP database and Device configuration initialization
-*  - Registration with LE and BT stack for various events
+*  - Registration with LE and Bluetooth stack for various events
 *  - Sending HID reports to the host
 *  - Processing write requests from the host
 *  - Low power management
 *  - Over the air firmware update (OTAFWU) via LE
 *
 * To demonstrate the app, walk through the following steps.
-* 1. Plug the CYW920739FCBGA120 board or 20739B1 Keyboard HW into your computer
-* 2. Build and download the application (to the EVAL board or Keyboard HW) as below:
-*    demo.hid.dual_mode_keyboard-CYW920719Q40EVB_01 download UART=COMxx
-* 3. Unplug the EVAL board or Keyboard HW from your computer and power cycle the EVAL board or keyboard HW
-* 4. Press any key to start LE advertising, enable inquiry scan and page scan, then pair with a PC or Tablet
-*     If using the CYW920739FCBGA120 board, use a fly wire to connect GPIO P0 and P11 to simulate key 'r' press,
-*     and remove the wire to simulate key release.
-* 5. Once connected, it becomes the keyboard of the PC or Tablet.
+* 1. Plug the Keyboard hardware into your computer
+* 2. Build and download the application
+* 3. Use the right-top corner 'lock' key to enable LE or Bluetooth pairing. The Blue LED slow blink indicates it is
+*    in LE advertizing. The yellow LED slow blink indicates it is in Bluetooth pairing.
+* 4. From the host (The PC or tablet), find the device and pair. Once connected, it becomes the keyboard of the PC or Tablet.
+*    The LED should become solid to indicate link is up.
 *
-* !!! In case you don't have the right board, i.e. CYW920739FCBGA120, which is required to support the 8*15
-* key matrix used in the keyboard application. And you only have CYW920719Q40EVB_01 board.
-* There is a ClientControl tool in the apps\host\client_control that you can use to test the basic BLE functions.
-* NOTE!!!Make sure you include "TESTING_USING_HCI=1" in make target:
-*     demo.hid.dual_mode_keyboard-CYW920719Q40EVB_01 download UART=COMxx TESTING_USING_HCI=1
+* In case if you don't have a right keyboard hardware, the key presses can be simulated with ClientControl using
+* AIROC evaluation boards. To enable ClientControl access, the compiler option "TESTING_USING_HCI=1" needs to
+* enabled.
 *
-* 1. Plug the WICED EVAL board into your computer
-* 2. Build and download the application (to the WICED board) as below:
-*    demo.hid.dual_mode_keyboard-CYW920719Q40EVB_01 download UART=COMxx TESTING_USING_HCI=1
+* 1. Plug the AIROC EVAL board into your computer
+* 2. Build and download the application
 * 3. Run ClientControl.exe
 * 4. Choose 115200 baudrate and select the "COM Port" in ClientControl tool window.
-* 5. Press "Enter Pairing Mode"or "Connect" to start LE advertising and enable inquiry scan and page scan, then pair with a PC or Tablet
-* 6. Once connected, it becomes the keyboard of the PC or Tablet.
-*  - Select Interrupt channel, Input report, enter the contents of the report
-*    and click on the Send button, to send the report.  For example to send
-*    key down event when key '1' is pushed, report should be
-*    01 00 00 1e 00 00 00 00 00.  All keys up 01 00 00 00 00 00 00 00 00.
+* 5. Click on "Enter Pairing Mode" to start LE or Bluetooth pairing. The Blue LED slow blink indicates it is
+*    in LE advertizing. The yellow LED slow blink indicates it is in Bluetooth pairing.
+* 6. From the host, pair with the device. Once connected, it becomes the keyboard of the PC or Tablet.
+* 7. Click on 'a', 'b', 'c', or the numeric buttons to simulate key presses. You can also manually use
+*    Input report to send key reports using Input Channel:
+*    Using pull-down menu to select 'Input Channel' and 'Input'. To send the key '1' down, enter
+*    '01 00 00 1e 00 00 00 00 00' and click on 'Send Report'. To send key release, enter
+*    '01 00 00 00 00 00 00 00 00' and click on 'Send Report'.
 *    Please make sure you always send a key up report following key down report.
 */
 #include "app.h"
@@ -121,6 +120,7 @@ app_t app = {
  *******************************************************************************/
 STATIC uint8_t APP_getIdleRate(void)
 {
+    WICED_BT_TRACE("\nAPP_getIdleRate");
     return app.idleRate;
 }
 
@@ -128,7 +128,7 @@ STATIC uint8_t APP_getIdleRate(void)
  * Function Name: APP_setIdleRate
  ********************************************************************************
  * Summary:
- *   Set the idle rate. Converts the idle rate to BT clocks and saves the value
+ *   Set the idle rate. Converts the idle rate to Bluetooth clocks and saves the value
  *   for later use.
  *
  * Parameters:
@@ -140,10 +140,11 @@ STATIC uint8_t APP_getIdleRate(void)
  *******************************************************************************/
 STATIC uint8_t APP_setIdleRate(uint8_t idleRateIn4msUnits)
 {
+    WICED_BT_TRACE("\nAPP_setIdleRate idleRateIn4msUnits:%d", idleRateIn4msUnits);
     // Save the idle rate in units of 4 ms
     app.idleRate = idleRateIn4msUnits;
 
-    // Convert to BT clocks for later use. Formula is ((Rate in 4 ms)*192)/15
+    // Convert to Bluetooth clocks for later use. Formula is ((Rate in 4 ms)*192)/15
     app.idleRateInBtClocks = idleRateIn4msUnits*192;
     app.idleRateInBtClocks /= 15;
 
@@ -166,6 +167,7 @@ STATIC uint8_t APP_setIdleRate(uint8_t idleRateIn4msUnits)
  *******************************************************************************/
 STATIC uint8_t APP_getProtocol(void)
 {
+    WICED_BT_TRACE("\nAPP_getProtocol %d", app.protocol);
     return app.protocol;
 }
 
@@ -190,12 +192,19 @@ STATIC uint8_t APP_getProtocol(void)
 STATIC uint8_t APP_getReport( uint8_t reportType, uint8_t reportId)
 {
     uint8_t size;
-    void *reportPtr = 0;
+    void *reportPtr;
+    uint8_t code = HID_PAR_HANDSHAKE_RSP_SUCCESS;
 
     // We only handle input/output reports.
-    if (reportType == HID_PAR_REP_TYPE_INPUT)
+    switch (reportType)
     {
-        switch (reportId) {
+    case HID_PAR_REP_TYPE_OTHER:
+        code = HID_PAR_HANDSHAKE_RSP_ERR_INVALID_REP_ID;
+        break;
+
+    case HID_PAR_REP_TYPE_INPUT:
+        switch (reportId)
+        {
         case RPT_ID_IN_STD_KEY:
             size = sizeof(KeyboardStandardReport);
             reportPtr = &key_rpts.stdRpt;
@@ -204,6 +213,11 @@ STATIC uint8_t APP_getReport( uint8_t reportType, uint8_t reportId)
         case RPT_ID_IN_BIT_MAPPED:
             size = sizeof(KeyboardBitMappedReport);
             reportPtr = &key_rpts.bitMappedReport;
+            break;
+
+        case RPT_ID_IN_SCROLL:
+            size = sizeof(KeyboardScrollReport);
+            reportPtr = &key_rpts.scrollReport;
             break;
 
         case RPT_ID_IN_BATTERY:
@@ -221,29 +235,39 @@ STATIC uint8_t APP_getReport( uint8_t reportType, uint8_t reportId)
             reportPtr = &key_rpts.funcLockReport;
             break;
 
+        default:
+            code = HID_PAR_HANDSHAKE_RSP_ERR_INVALID_REP_ID;
+            break;
         }
-    }
-    else if (reportType == HID_PAR_REP_TYPE_OUTPUT)
-    {
-        // Ensure that one of the valid keyboard output reports is being requested
-        // Also grab its length and pointer
-        if (reportId == RPT_ID_OUT_KB_LED)
+        break;
+
+    case HID_PAR_REP_TYPE_OUTPUT:
+        switch (reportId)
         {
+        case RPT_ID_OUT_KB_LED:
             size = sizeof(KeyboardLedReport);
             reportPtr = &key_rpts.ledReport;
+            break;
+        default:
+            code = HID_PAR_HANDSHAKE_RSP_ERR_INVALID_REP_ID;
+            break;
         }
+        break;
+
+    default:
+        code = HID_PAR_HANDSHAKE_RSP_ERR_INVALID_PARAM;
+        break;
     }
 
-    // We do not understand this, pass this to the base class.
-    if (!reportPtr)
+    if (code == HID_PAR_HANDSHAKE_RSP_SUCCESS)
     {
-        return HID_PAR_HANDSHAKE_RSP_ERR_INVALID_PARAM;
+        hidd_link_send_data(HCI_CONTROL_HID_REPORT_CHANNEL_CONTROL, reportType , reportPtr, size);
     }
-
-    hidd_link_send_data(HCI_CONTROL_HID_REPORT_CHANNEL_CONTROL, reportType , reportPtr, size);
-
-    // Done!
-    return HID_PAR_HANDSHAKE_RSP_SUCCESS;
+    else
+    {
+        WICED_BT_TRACE("\nget_Report: returned with %d", code);
+    }
+    return code;
 }
 
 /********************************************************************************
@@ -740,7 +764,7 @@ STATIC void APP_generateAndTxReports(void)
  *     transports
  *   - If the active transport is connected, requests generation of reports via
  *     generateAndTransmitReports()
- *   - Does connect button polling and informs the BT transport once the connect
+ *   - Does connect button polling and informs the Bluetooth transport once the connect
  *     button has been held for the configured amount of time.
  *  Note: transport may be NULL if no transport context is required - like when
  *  none
@@ -857,6 +881,10 @@ uint8_t APP_setReport(wiced_hidd_report_type_t reportType, uint8_t *payload, uin
 {
     uint8_t reportId = *payload++;
     app_setReport(reportType, reportId, payload, --payloadSize);
+    if (app.setReport_status != HID_PAR_HANDSHAKE_RSP_SUCCESS)
+    {
+        WICED_BT_TRACE("\nAPP_setReport with returned code %d", app.setReport_status);
+    }
     return app.setReport_status;
 }
 
@@ -936,20 +964,17 @@ void app_setReport(wiced_hidd_report_type_t reportType,
                      void *payload,
                      uint16_t payloadSize)
 {
-    WICED_BT_TRACE("\napp_setReport: %d", payloadSize);
-    app.setReport_status = HID_PAR_HANDSHAKE_RSP_SUCCESS;
+    WICED_BT_TRACE("\napp_setReport: type:%d, reportId:%d, payLoad:%d", reportType, reportId, payloadSize);
 
-    if (!key_setReport(reportType, reportId, payload, payloadSize))
+    if ((reportType == WICED_HID_REPORT_TYPE_FEATURE) && (reportId == RPT_ID_IN_CNT_CTL))
     {
-        if ((reportType == WICED_HID_REPORT_TYPE_FEATURE) && (reportId == RPT_ID_IN_CNT_CTL))
-        {
-            app.connection_ctrl_rpt = *((uint8_t*)payload);
-            WICED_BT_TRACE("\nPTS_HIDS_CONFORMANCE_TC_CW_BV_03_C write val: %d ", app.connection_ctrl_rpt);
-        }
-        else
-        {
-            app.setReport_status = HID_PAR_HANDSHAKE_RSP_ERR_UNSUPPORTED_REQ;
-        }
+        app.connection_ctrl_rpt = *((uint8_t*)payload);
+        WICED_BT_TRACE("\nPTS_HIDS_CONFORMANCE_TC_CW_BV_03_C write val: %d ", app.connection_ctrl_rpt);
+        app.setReport_status = HID_PAR_HANDSHAKE_RSP_SUCCESS;
+    }
+    else
+    {
+        app.setReport_status = key_setReport(reportType, reportId, payload, payloadSize);
     }
 }
 
@@ -1110,7 +1135,7 @@ wiced_result_t app_start(void)
     wiced_hidd_event_queue_init(&app.eventQueue, (uint8_t *)&app.events, APP_QUEUE_SIZE, APP_QUEUE_MAX);
 
     // register applicaton callbacks
-    hidd_register_app_callback(&appCallbacks);
+    hidd_link_register_callbacks(&appCallbacks);
 
     /* transport init */
     bt_init();
@@ -1128,4 +1153,62 @@ wiced_result_t app_start(void)
     WICED_BT_TRACE("\nFree RAM bytes=%d bytes", wiced_memory_get_free_bytes());
 
     return WICED_BT_SUCCESS;
+}
+
+/*
+ *  Entry point to the application. Set device configuration and start Bluetooth
+ *  stack initialization.  The actual application initialization will happen
+ *  when stack reports that Bluetooth device is ready.
+ */
+void application_start( void )
+{
+    extern const wiced_platform_led_config_t platform_led[];
+    extern const size_t led_count;
+
+    // Initialize LED/UART for debug
+    wiced_set_debug_uart(WICED_ROUTE_DEBUG_TO_PUART);
+    hidd_led_init(led_count, platform_led);
+
+    app_init(app_start, NULL);
+
+    WICED_BT_TRACE("\nDEV=%d Version:%d.%d Rev=%d Build=%d",hidd_chip_id(), WICED_SDK_MAJOR_VER, WICED_SDK_MINOR_VER, WICED_SDK_REV_NUMBER, WICED_SDK_BUILD_NUMBER);
+
+#if (SLEEP_ALLOWED == 3)
+    hidd_allowed_hidoff(TRUE);
+#endif
+
+    WICED_BT_TRACE("\nSLEEP_ALLOWED=%d",SLEEP_ALLOWED);
+    WICED_BT_TRACE("\nLED SUPPORT=%d", LED_SUPPORT);
+
+#ifdef OTA_FIRMWARE_UPGRADE
+    WICED_BT_TRACE("\nOTA_FW_UPGRADE");
+ #ifdef OTA_SECURE_FIRMWARE_UPGRADE
+    WICED_BT_TRACE("\nOTA_SEC_FW_UPGRADE");
+ #endif
+#endif
+
+#ifdef ASSYM_PERIPHERAL_LATENCY
+    WICED_BT_TRACE("\nASSYMETRIC_PERIPHERAL_LATENCY");
+#endif
+
+#ifdef SKIP_CONNECT_PARAM_UPDATE_EVEN_IF_NO_PREFERED
+    WICED_BT_TRACE("\nSKIP_PARAM_UPDATE");
+#endif
+
+#ifdef AUTO_RECONNECT
+    WICED_BT_TRACE("\nAUTO_RECONNECT");
+#endif
+
+#ifdef ENDLESS_LE_ADVERTISING
+    WICED_BT_TRACE("\nENDLESS_ADV");
+#endif
+
+#ifdef LE_LOCAL_PRIVACY_SUPPORT
+    WICED_BT_TRACE("\nLE_LOCAL_PRIVACY_SUPPORT");
+#endif
+
+#ifdef FASTPAIR_ENABLE
+    WICED_BT_TRACE("\nFASTPAIR_ENABLE");
+#endif
+
 }

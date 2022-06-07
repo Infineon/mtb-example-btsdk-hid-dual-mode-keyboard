@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2021, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2016-2022, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -47,6 +47,7 @@
 #include "wiced_platform.h"
 #include "wiced_bt_trace.h"
 #include "hidd_lib.h"
+#include "btstack.h"
 
 #if 0
  #define STATIC
@@ -101,8 +102,6 @@
 
  #define CONNECT_KEY_INDEX   8
 #endif
-
-typedef void (app_poll_callback_t)(void);
 
 /********************************************************************************
  * Report ID defines
@@ -186,7 +185,7 @@ typedef struct {
     uint8_t setReport_status;
     uint8_t connection_ctrl_rpt;
     uint8_t  idleRate;                           // Save the idle rate in units of 4 ms
-    uint32_t idleRateInBtClocks;                 // Convert to BT clocks for later use. Formula is ((Rate in 4 ms)*192)/15
+    uint32_t idleRateInBtClocks;                 // Convert to Bluetooth clocks for later use. Formula is ((Rate in 4 ms)*192)/15
 
     uint8_t transportStateChangeNotification:1;
     uint8_t pollStarted:1;

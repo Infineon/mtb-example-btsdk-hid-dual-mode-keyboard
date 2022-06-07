@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2021, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2016-2022, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -318,7 +318,7 @@ void key_entry_handleCode(wiced_hidd_app_event_queue_t * pEventQueue)
 ///   a prompt and app is capable of prompting (through dosplay), flush any pending user input
 ///   and enter pin code entry mode. This is done by setting the flag
 ///   codeEntryInProgress to LEGACY_PIN_ENTRY_IN_PROGRESS.
-/// - Else it rejects the request and tells the BT transport to disconnect.
+/// - Else it rejects the request and tells the Bluetooth transport to disconnect.
 ////////////////////////////////////////////////////////////////////////////////
 void key_entry_enterPinCodeEntryMode(void)
 {
@@ -330,7 +330,7 @@ void key_entry_enterPinCodeEntryMode(void)
 /// - if no other pin/pass code request is pending, flush any pending user input
 ///   and enter pin code entry mode. This is done by setting the flag
 ///   codeEntryInProgress to PASS_KEY_ENTRY_IN_PROGRESS
-/// - Else it rejects the request and tells the BT transport to disconnect.
+/// - Else it rejects the request and tells the Bluetooth transport to disconnect.
 ////////////////////////////////////////////////////////////////////////////////
 void key_entry_enterPassCodeEntryMode(void)
 {
